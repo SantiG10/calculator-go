@@ -42,7 +42,7 @@ jobs:
         run: echo docker build and push
 
       - name: deploy fargate
-        run: deploy fargate
+        run: echo deploy fargate
 
       - name: Update Slack Message
         if: ${{ always() && job.status != 'success' }}

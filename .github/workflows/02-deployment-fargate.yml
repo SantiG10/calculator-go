@@ -1,0 +1,60 @@
+name: Deploy to Cloud Functions
+on:
+  workflow_run:
+    branches:
+    - main
+    tags:
+    - '**'
+    workflows: ["Build and Test"]
+    types: 
+      - completed
+
+jobs:
+  deploy:
+    name: deploy AWS
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success' }}
+    env:
+      AWS_REGION: "us-east-1"
+    steps:
+      - name: Slack Notification Start Job
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_CHANNEL: devops-test
+          SLACK_COLOR: good
+          SLACK_TITLE: 'Start Job CI :gear:'
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_FOOTER: KumulyBot
+          
+      - name: Checkout
+        uses: actions/checkout@v2
+      
+      - name: Configure AWS credentials
+        id: creds
+        uses: aws-actions/configure-aws-credentials@v1
+        if: ${{ false }}
+        with:
+          role-to-assume: ${{ secrets.AWS_DOCS_ROLE_ARN }}
+          role-session-name: buildAndDeployDocs
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: docker build and push
+        run: echo docker build and push
+
+      - name: deploy fargate
+        run: deploy fargate
+
+      - name: Update Slack Message
+        if: ${{ always() && job.status != 'success' }}
+        run: echo "SLACK_MESSAGE_JOB=Job executed with errors :x:" >> $GITHUB_ENV
+        
+      - name: Slack Notification Status Job
+        uses: rtCamp/action-slack-notify@v2
+        if: always()
+        env:
+          SLACK_CHANNEL: devops-test
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: 'Status Job CI :gear:'
+          SLACK_MESSAGE: ${{ env.SLACK_MESSAGE_JOB }}
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_FOOTER: KumulyBot

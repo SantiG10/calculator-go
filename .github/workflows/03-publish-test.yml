@@ -1,0 +1,32 @@
+name: Publish Tests
+on:
+  workflow_run:
+    branches:
+    - main
+    tags:
+    - '**'
+    workflows: ["Build and Test"]
+    types: 
+      - completed
+
+jobs:
+  publish-coverage-cc:
+    name: Publish Code Coverage
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Download Test Coverage Files
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: build-test.yml
+          workflow_conclusion: success
+          name: coverage-files
+          path: coverage
+
+      - name: Publish to Codeclimate
+        uses: paambaati/codeclimate-action@v3.0.0
+        env:
+          CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}

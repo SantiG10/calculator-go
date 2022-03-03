@@ -39,9 +39,9 @@ jobs:
 
       - name: Test
         run: |
-          go install github.com/jandelgado/gcov2lcov@latest && mkdir coverage
+          go install github.com/jandelgado/gcov2lcov@latest
           go test -v ./... -coverprofile=coverage.out && \
-          gcov2lcov -infile=coverage.out -outfile=coverage/coverage.lcov
+          gcov2lcov -infile=coverage.out -outfile=coverage.lcov
 
       - name: Build
         run: go build -v ./...
@@ -50,7 +50,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: coverage-files
-          path: ./coverage
+          path: ./coverage.lcov
           retention-days: 1
 
       - name: Update Slack Message

@@ -24,12 +24,8 @@ jobs:
           workflow: 01-build-test-golang.yml
           workflow_conclusion: success
           name: coverage-files
-          path: coverage
 
       - name: Publish to Codeclimate
         uses: paambaati/codeclimate-action@v3.0.0
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
-        with:
-          coverageLocations: |
-            ${{github.workspace}}/coverage/*.lcov:lcov
